@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/zepto/1.2.0/zepto.min.js" integrity="sha512-BrvVYNhKh6yST24E5DY/LopLO5d+8KYmIXyrpBIJ2PK+CyyJw/cLSG/BfJomWLC1IblNrmiJWGlrGueKLd/Ekw==" crossorigin="anonymous"></script>
+
+    <script>
+        const api = 'f58a4215c9e004a6be525b1659e4cf63'; // API key for last.fm
+        const username = 'ilhamfauzan'; // last.fm username
+        const time = 2; // in seconds
+
+        let current;
+
+        async function update(previous, onSuccess) {
+            try {
+                const response = await fetch(`http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=${username}&api_key=${api}&format=json&limit=2`);
+                const json = await response.json();
+
+                if (!json.recenttracks) {
+                    throw new Error("Error fetching lastfm api: " + json.message);
+                }
+
+                const trackSrc = json.recenttracks.track[0];
+
+                const track = {
+                    title: trackSrc.name,
+                    artist: trackSrc.artist["#text"],
+                    album: trackSrc.album["#text"],
+                    url: trackSrc.url
+                };
+
+                if (previous && previous.title == track.title && previous.album == track.album) {
+                    return;
+                }
+
+                const isNowPlaying = trackSrc["@attr"] && trackSrc["@attr"].nowplaying === "true";
+
+                onSuccess({ track, isNowPlaying });
+            } catch (error) {
+                console.error("Error fetching lastfm api:", error);
+            }
+        }
+
+        function setNew(details) {
+            if (!details) return;
+            current = details;
+
+            const status = details.isNowPlaying ? 'LISTENING TO ' : 'LAST PLAYED SONG';
+
+            // $("#track").text(`${status} ${details.track.title} - ${details.track.artist}`);
+
+            $("#status").text(status);
+            $("#track").html(`<a href="${details.track.url}">${details.track.title} - ${details.track.artist}</a>`);
+        }
+
+        setInterval(() => {
+            update(current, setNew);
+        }, time * 2000);
+    </script>
+
+    <style>
+        html,
+        body {
+            font-size: 16px;
+            margin: 0;
+            padding: 0;
+        }
+        #widget p {
+            display: inline-block;
+            margin: 0;
+        }
+    </style>
+</head>
+
+<body>
+        <i id="status">LINE 1</i>
+        <i id="track">LINE 2</i>
+</body>
+
+</html>
