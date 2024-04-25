@@ -1,5 +1,9 @@
-const api = ''; // API key for last.fm
-const username = ''; // last.fm username
+// 1. create last.fm account
+// 2. connect it with spotify (check settings)
+// 3. create api key (https://www.last.fm/api/account/create)
+
+const api = 'apikey'; // replace with API Key from last.fm
+const username = 'ilhamfauzan'; // last.fm username
 const time = 2; // in seconds
 
 let current;
